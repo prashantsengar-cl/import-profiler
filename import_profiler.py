@@ -56,14 +56,14 @@ def compute_intime(parent, full_stack, elapsed, ordered_visited, visited, depth=
 
 class ImportProfilerContext(object):
     def __init__(self):
-        self._original_importer = __builtins__["__import__"]
+        self._original_importer = getattr(__builtins__, "__import__")
         self._import_stack = ImportStack()
 
     def enable(self):
-        __builtins__["__import__"] = self._profiled_import
+        setattr(__builtins__, "__import__", self._profiled_import)
 
     def disable(self):
-        __builtins__["__import__"] = self._original_importer
+        setattr(__builtins__, "__import__", self._original_importer)
 
     def print_info(self, threshold=1.):
         """ Print profiler results.
@@ -116,7 +116,7 @@ class ImportProfilerContext(object):
         self.disable()
 
     def _profiled_import(self, name, globals=None, locals=None, fromlist=None,
-                         level=-1, *a, **kw):
+                         level=0, *a, **kw):
         if globals is None:
             context_name = None
         else:
