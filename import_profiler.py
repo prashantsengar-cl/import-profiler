@@ -1,5 +1,6 @@
 import operator
 import time
+import builtins
 
 from attr import attr, attributes, Factory
 
@@ -56,14 +57,14 @@ def compute_intime(parent, full_stack, elapsed, ordered_visited, visited, depth=
 
 class ImportProfilerContext(object):
     def __init__(self):
-        self._original_importer = getattr(__builtins__, "__import__")
+        self._original_importer = builtins.__import__
         self._import_stack = ImportStack()
 
     def enable(self):
-        setattr(__builtins__, "__import__", self._profiled_import)
+        builtins.__import__ = self._profiled_import
 
     def disable(self):
-        setattr(__builtins__, "__import__", self._original_importer)
+        builtins.__import__ = self._original_importer
 
     def print_info(self, threshold=1.):
         """ Print profiler results.
@@ -97,6 +98,7 @@ class ImportProfilerContext(object):
                     "{:.1f}".format(cumtime),
                     "{:.1f}".format(intime),
                     "+" * level + name,
+                    context_name or "",
                 ))
 
         # Import here to avoid messing with the profile
@@ -104,7 +106,7 @@ class ImportProfilerContext(object):
 
         print(
             tabulate.tabulate(
-                lines, headers=("cumtime (ms)", "intime (ms)", "name"), tablefmt="plain")
+                lines, headers=("cumtime (ms)", "intime (ms)", "name", "location"), tablefmt="plain")
         )
 
     # Protocol implementations
